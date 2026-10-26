@@ -71,6 +71,11 @@ class Score:
 ZERO = Score(total=0.0, segmentation=0.0, timing=0.0, caption=0.0)
 
 
+def zero(reason: str) -> Score:
+    """A zero score with the reason the miner is told."""
+    return Score(**{**ZERO.__dict__, "zero_reason": reason})
+
+
 def overlap(a: Step, b: Step) -> float:
     """Intersection over union of two steps' intervals; 0 when they do not touch."""
     intersection = max(0.0, min(a.end_s, b.end_s) - max(a.start_s, b.start_s))
@@ -132,13 +137,13 @@ def score(submission: Submission, key: AnswerKey, job: Job | None = None) -> Sco
     deadline) scores zero. Everything else follows docs/scoring.md.
     """
     if job is not None and is_late(submission, job):
-        return Score(**{**ZERO.__dict__, "zero_reason": "late"})
+        return zero("late")
     if submission.job_id != key.job_id:
-        return Score(**{**ZERO.__dict__, "zero_reason": "answer key is for another job"})
+        return zero("answer key is for another job")
 
     matched = match_steps(submission.steps, key.steps)
     if not matched:
-        return Score(**{**ZERO.__dict__, "zero_reason": "no step matched the answer key"})
+        return zero("no step matched the answer key")
 
     pairs = tuple(
         PairScore(
@@ -166,5 +171,5 @@ def score_document(document: dict[str, Any], key: AnswerKey, job: Job) -> Score:
     try:
         submission = load_submission(document, job)
     except ProtocolError as error:
-        return Score(**{**ZERO.__dict__, "zero_reason": f"malformed: {error}"})
+        return zero(f"malformed: {error}")
     return score(submission, key, job)

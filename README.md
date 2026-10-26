@@ -65,8 +65,15 @@ job = load_job("examples/job.json")
 submission = load_submission("examples/submission.json", job)
 ```
 
-The miner, validator and mock server entry points are registered (`thor-miner`,
-`thor-validator`, `thor-mock-server`) and will fill in feature by feature.
+`thor-mock-server` runs a local job queue on the protocol's paths, serving the example jobs
+and scoring submissions against the example answer key:
+
+```
+thor-mock-server --port 8787
+curl -H 'X-Thor-Hotkey: 5FQmDdKuJgkkBhY2Bd4gdBcPy79DkBaFCXtawBp1e48zuvDW' http://127.0.0.1:8787/v1/jobs/next
+```
+
+The miner and validator entry points (`thor-miner`, `thor-validator`) fill in next.
 
 ## Status
 
@@ -76,8 +83,8 @@ The miner, validator and mock server entry points are registered (`thor-miner`,
 | Protocol: schemas, examples, validation | done |
 | Docs: protocol, scoring, validators | done |
 | Scorer | done |
-| Mock job server | next |
-| Reference miner | planned |
+| Mock job server | done |
+| Reference miner | next |
 | Validator | planned |
 
 ## Licence
