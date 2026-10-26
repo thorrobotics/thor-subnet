@@ -73,7 +73,17 @@ thor-mock-server --port 8787
 curl -H 'X-Thor-Hotkey: 5FQmDdKuJgkkBhY2Bd4gdBcPy79DkBaFCXtawBp1e48zuvDW' http://127.0.0.1:8787/v1/jobs/next
 ```
 
-The miner and validator entry points (`thor-miner`, `thor-validator`) fill in next.
+With the mock server running, the reference miner fetches a job, labels it, checks the
+work against the protocol and the deadline, and hands it in:
+
+```
+thor-miner --pipeline example --once
+```
+
+`--pipeline manual` writes a template for a person to fill in (under `./work`) and submits
+it on a later pass; `--pipeline your.module:function` plugs in your own labeller. The one
+function a miner replaces is in [miner/pipeline.py](miner/pipeline.py). The validator
+entry point (`thor-validator`) fills in next.
 
 ## Status
 
@@ -84,8 +94,8 @@ The miner and validator entry points (`thor-miner`, `thor-validator`) fill in ne
 | Docs: protocol, scoring, validators | done |
 | Scorer | done |
 | Mock job server | done |
-| Reference miner | next |
-| Validator | planned |
+| Reference miner | done |
+| Validator | next |
 
 ## Licence
 
