@@ -9,7 +9,7 @@ description = "THOR's Bittensor subnet (SN112): labelling first-person video for
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = ["jsonschema>=4.23", "referencing>=0.35"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6"]

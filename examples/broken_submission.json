@@ -1,0 +1,11 @@
+{
+  "job_id": "job_000001_fold_towel",
+  "miner_hotkey": "5FQmDdKuJgkkBhY2Bd4gdBcPy79DkBaFCXtawBp1e48zuvDW",
+  "submitted_at": "2026-10-26T10:40:00Z",
+  "method": "automated",
+  "steps": [
+    { "start_s": 0.0, "end_s": 8.0, "caption": { "action": "pick up", "object": "towel", "hand": "left" } },
+    { "start_s": 8.0, "end_s": 16.0, "caption": { "action": "fold", "object": "shirt", "hand": "left" } },
+    { "start_s": 16.0, "end_s": 24.5, "caption": { "action": "put down", "object": "towel", "hand": "left" } }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/thorrobotics/thor-subnet/thor/schemas/answer_key.schema.json",
+  "title": "Answer key",
+  "description": "The known-correct labels for a test video. Validators score submissions against it; miners never see it and cannot tell a test job from a normal one.",
+  "type": "object",
+  "required": ["job_id", "steps", "provenance"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": { "type": "string", "minLength": 8 },
+    "provenance": { "type": "string", "enum": ["expert", "consensus"], "description": "Labelled by THOR's own annotators, or agreed by several independent labellers." },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "submission.schema.json#/$defs/step" }
+    }
+  }
+}

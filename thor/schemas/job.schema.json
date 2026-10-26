@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/thorrobotics/thor-subnet/thor/schemas/job.schema.json",
+  "title": "Job",
+  "description": "One labelling job as the queue serves it to a miner: a first-person video of a hands-on task, what to label, and when the work is due.",
+  "type": "object",
+  "required": ["job_id", "video", "task", "issued_at", "deadline"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": { "type": "string", "minLength": 8, "description": "Opaque, unique per job. Quoted back in the submission." },
+    "video": {
+      "type": "object",
+      "required": ["url", "duration_s", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "url": { "type": "string", "format": "uri", "description": "Where to download the clip. V1 clips are open-source footage." },
+        "duration_s": { "type": "number", "exclusiveMinimum": 0, "description": "Length of the clip in seconds. Every step must fall inside it." },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "Digest of the file, so a miner can check the download." },
+        "source": {
+          "type": "object",
+          "required": ["name", "licence"],
+          "additionalProperties": false,
+          "properties": {
+            "name": { "type": "string" },
+            "licence": { "type": "string", "description": "SPDX identifier or the licence's name." },
+            "url": { "type": "string", "format": "uri" }
+          }
+        }
+      }
+    },
+    "task": {
+      "type": "object",
+      "required": ["title", "instructions"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "description": "What the person in the video is doing, in a few words." },
+        "instructions": { "type": "string", "minLength": 1, "description": "How to split the task into steps and what each caption must say." }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_steps": { "type": "integer", "minimum": 1, "default": 50 },
+        "max_caption_chars": { "type": "integer", "minimum": 1, "default": 80 }
+      }
+    },
+    "issued_at": { "type": "string", "format": "date-time" },
+    "deadline": { "type": "string", "format": "date-time", "description": "Submissions after this moment score zero." }
+  }
+}

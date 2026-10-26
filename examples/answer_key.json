@@ -1,0 +1,12 @@
+{
+  "job_id": "job_000001_fold_towel",
+  "provenance": "expert",
+  "steps": [
+    { "start_s": 0.6, "end_s": 3.0, "caption": { "action": "pick up", "object": "towel", "hand": "both" } },
+    { "start_s": 3.0, "end_s": 6.5, "caption": { "action": "spread out", "object": "towel", "hand": "both" } },
+    { "start_s": 6.8, "end_s": 11.0, "caption": { "action": "fold in half", "object": "towel", "hand": "both" } },
+    { "start_s": 11.4, "end_s": 15.9, "caption": { "action": "fold in half", "object": "towel", "hand": "both" } },
+    { "start_s": 16.2, "end_s": 19.6, "caption": { "action": "smooth", "object": "towel", "hand": "right" } },
+    { "start_s": 19.8, "end_s": 23.9, "caption": { "action": "place", "object": "folded towel", "hand": "both" } }
+  ]
+}

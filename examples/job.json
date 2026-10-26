@@ -1,0 +1,20 @@
+{
+  "job_id": "job_000001_fold_towel",
+  "video": {
+    "url": "https://clips.thormachines.ai/v1/fold-towel-0001.mp4",
+    "duration_s": 24.5,
+    "sha256": "9f2c1b0e4d7a6c5b3e8f1a2d4c6b8e0f1a3c5e7b9d1f3a5c7e9b1d3f5a7c9e1b",
+    "source": {
+      "name": "Open household tasks, clip 0001",
+      "licence": "CC-BY-4.0",
+      "url": "https://clips.thormachines.ai/v1/"
+    }
+  },
+  "task": {
+    "title": "Fold a towel",
+    "instructions": "Split the task into the steps the person performs, in order. A step starts when the hand begins the movement and ends when the object comes to rest. Caption each step with the action, the object acted on and the hand used."
+  },
+  "limits": { "max_steps": 12, "max_caption_chars": 40 },
+  "issued_at": "2026-10-26T09:00:00Z",
+  "deadline": "2026-10-26T21:00:00Z"
+}

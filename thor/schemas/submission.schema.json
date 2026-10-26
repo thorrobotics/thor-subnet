@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/thorrobotics/thor-subnet/thor/schemas/submission.schema.json",
+  "title": "Submission",
+  "description": "A miner's answer to one job: the steps the task splits into, when each starts and ends, and a caption per step saying what was done, to which object, with which hand.",
+  "type": "object",
+  "required": ["job_id", "miner_hotkey", "submitted_at", "steps"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": { "type": "string", "minLength": 8 },
+    "miner_hotkey": { "type": "string", "minLength": 47, "maxLength": 48, "description": "The miner's SS58 hotkey, which signs the request that carries this document." },
+    "submitted_at": { "type": "string", "format": "date-time" },
+    "method": { "type": "string", "enum": ["automated", "human", "mixed"], "description": "How the work was done. Optional and never scored: the network pays for the output." },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/step" },
+      "description": "In time order. Steps may leave gaps but must not overlap."
+    }
+  },
+  "$defs": {
+    "step": {
+      "type": "object",
+      "required": ["start_s", "end_s", "caption"],
+      "additionalProperties": false,
+      "properties": {
+        "start_s": { "type": "number", "minimum": 0 },
+        "end_s": { "type": "number", "exclusiveMinimum": 0 },
+        "caption": { "$ref": "#/$defs/caption" }
+      }
+    },
+    "caption": {
+      "type": "object",
+      "required": ["action", "object", "hand"],
+      "additionalProperties": false,
+      "properties": {
+        "action": { "type": "string", "minLength": 1, "maxLength": 40, "description": "A verb phrase in the present tense: \"pick up\", \"fold in half\"." },
+        "object": { "type": "string", "minLength": 1, "maxLength": 40, "description": "The thing acted on: \"towel\", \"left corner of the towel\"." },
+        "hand": { "type": "string", "enum": ["left", "right", "both"] }
+      }
+    }
+  }
+}

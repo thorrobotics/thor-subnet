@@ -48,6 +48,17 @@ pip install -e ".[dev]"
 pytest
 ```
 
+The protocol's three documents live in `thor/schemas/` with one example of each in
+`examples/`. `thor.models` loads and checks them; a document that breaks a rule raises
+`ProtocolError` naming the field:
+
+```python
+from thor.models import load_job, load_submission
+
+job = load_job("examples/job.json")
+submission = load_submission("examples/submission.json", job)
+```
+
 The miner, validator and mock server entry points are registered (`thor-miner`,
 `thor-validator`, `thor-mock-server`) and will fill in feature by feature.
 
@@ -56,8 +67,8 @@ The miner, validator and mock server entry points are registered (`thor-miner`,
 | Piece | State |
 | --- | --- |
 | Repository, notice, packaging, CI | done |
-| Protocol: schemas, examples, validation | next |
-| Docs: protocol, scoring, validators | planned |
+| Protocol: schemas, examples, validation | done |
+| Docs: protocol, scoring, validators | next |
 | Scorer | planned |
 | Mock job server | planned |
 | Reference miner | planned |
