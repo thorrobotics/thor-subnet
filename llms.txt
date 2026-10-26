@@ -1,0 +1,19 @@
+# THOR subnet (SN112)
+
+> Illustrative only. This repository shows how THOR's Bittensor subnet will work. The
+> network is not live, no weights are set and nothing here earns rewards yet.
+
+THOR's subnet labels first-person video of people doing hands-on tasks, for robotics
+training: it splits each task into steps, marks when each starts and ends, and captions
+each step with the action, the object and the hand. V1 uses open-source footage and aims
+to publish an open dataset that proves the network can do this well.
+
+- Miners fetch jobs (never pushed), label them by any method, and submit before the
+  deadline. Late or malformed work scores zero. See docs/protocol.md.
+- Submissions are scored against answer keys on segmentation, timing and captions. See
+  docs/scoring.md; the implementation is thor/scoring.py.
+- Validators score submissions, fact check with vision language models, and are
+  themselves scored on catching broken labels and passing correct ones. See
+  docs/validators.md.
+- The protocol's documents are JSON Schemas in thor/schemas/ with examples in examples/.
+- thor-miner, thor-validator and thor-mock-server run the loop locally.

@@ -26,6 +26,12 @@ are to the answer key, and validators run vision language models to fact check m
 Validators are themselves scored on whether they catch labels the network deliberately broke
 and pass labels it knows are correct. Always saying yes, or always saying no, scores badly.
 
+## Read more
+
+- [Protocol](docs/protocol.md): the pull model, the three documents and the rules a submission must follow.
+- [Scoring](docs/scoring.md): how a submission is scored against an answer key.
+- [Validators](docs/validators.md): answer keys, fact checking and how validators are scored.
+
 ## Layout
 
 ```
@@ -68,8 +74,8 @@ The miner, validator and mock server entry points are registered (`thor-miner`,
 | --- | --- |
 | Repository, notice, packaging, CI | done |
 | Protocol: schemas, examples, validation | done |
-| Docs: protocol, scoring, validators | next |
-| Scorer | planned |
+| Docs: protocol, scoring, validators | done |
+| Scorer | next |
 | Mock job server | planned |
 | Reference miner | planned |
 | Validator | planned |
