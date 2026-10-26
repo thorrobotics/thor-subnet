@@ -24,9 +24,14 @@ an interface and a stub.
 ## Calibration: scoring the validators
 
 Validators are scored too. Mixed into each validator's work are submissions whose truth
-the network already knows: labels taken from answer keys and deliberately broken (a step
-dropped, a boundary moved, a hand or object changed) and labels known to be correct. The
-validator does not know which are which.
+the network already knows: labels taken from answer keys and deliberately broken (a third of
+the steps dropped, every boundary moved past the tolerance, every hand swapped, every object
+changed) and labels known to be correct. The validator does not know which are which.
+
+A validator holding the answer key judges labels with the scorer, and passes them only when
+each part of the score clears its bar: segmentation 0.9, timing 0.75 and captions 0.9. One
+part cannot hide another: swapping every hand costs only a tenth of the total but drops the
+caption score below its bar.
 
 A validator's calibration is its balanced accuracy over those planted cases: the mean of
 the share of broken labels it caught and the share of correct labels it passed. Always

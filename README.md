@@ -82,8 +82,17 @@ thor-miner --pipeline example --once
 
 `--pipeline manual` writes a template for a person to fill in (under `./work`) and submits
 it on a later pass; `--pipeline your.module:function` plugs in your own labeller. The one
-function a miner replaces is in [miner/pipeline.py](miner/pipeline.py). The validator
-entry point (`thor-validator`) fills in next.
+function a miner replaces is in [miner/pipeline.py](miner/pipeline.py).
+
+The validator then collects what was submitted, scores it against the answer key, measures
+its own calibration on planted cases and prints the weights it would set:
+
+```
+thor-validator --once
+```
+
+`--backend stub` swaps the answer-key fact checker for one that accepts everything, and
+shows why that calibrates at 0.5.
 
 ## Status
 
@@ -95,7 +104,7 @@ entry point (`thor-validator`) fills in next.
 | Scorer | done |
 | Mock job server | done |
 | Reference miner | done |
-| Validator | next |
+| Validator | done |
 
 ## Licence
 
