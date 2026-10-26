@@ -51,6 +51,7 @@ timing, caption, total, and the pairs it matched) so a miner can see where point
 ## What the examples score
 
 `examples/submission.json` against `examples/answer_key.json` matches all six steps with
-boundaries a few tenths of a second off and one object phrased differently, and scores in
-the high 0.8s. `examples/broken_submission.json` has three steps where the key has six,
-the wrong hand throughout and one wrong object, and scores below 0.3.
+boundaries a few tenths of a second off and one object phrased differently: segmentation 1,
+timing 0.93, caption 0.97, total 0.95. `examples/broken_submission.json` has three steps
+where the key has six, the wrong hand throughout and one wrong object: segmentation 0.67,
+timing 0.32, caption 0.24, total 0.19.

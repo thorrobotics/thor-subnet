@@ -75,8 +75,8 @@ The miner, validator and mock server entry points are registered (`thor-miner`,
 | Repository, notice, packaging, CI | done |
 | Protocol: schemas, examples, validation | done |
 | Docs: protocol, scoring, validators | done |
-| Scorer | next |
-| Mock job server | planned |
+| Scorer | done |
+| Mock job server | next |
 | Reference miner | planned |
 | Validator | planned |
 
