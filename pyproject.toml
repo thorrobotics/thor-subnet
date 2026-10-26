@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "thor-subnet"
+version = "0.1.0"
+description = "THOR's Bittensor subnet (SN112): labelling first-person video for robotics training. Illustrative, not live."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+thor-miner = "miner.run:main"
+thor-validator = "validator.run:main"
+thor-mock-server = "mock_server.app:main"
+
+[project.urls]
+Repository = "https://github.com/thorrobotics/thor-subnet"
+
+[tool.setuptools]
+packages = ["thor", "thor.schemas", "miner", "validator", "mock_server"]
+
+[tool.setuptools.package-data]
+"thor.schemas" = ["*.json"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
