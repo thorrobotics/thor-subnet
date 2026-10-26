@@ -26,7 +26,10 @@ an interface and a stub.
 Validators are scored too. Mixed into each validator's work are submissions whose truth
 the network already knows: labels taken from answer keys and deliberately broken (a third of
 the steps dropped, every boundary moved past the tolerance, every hand swapped, every object
-changed) and labels known to be correct. The validator does not know which are which.
+changed) and labels known to be correct, including ones with the small imperfections real
+work has (boundaries a few tenths off, an object phrased differently), so a validator that
+rejects everything imperfect is caught as surely as one that passes everything. The validator
+does not know which are which.
 
 A validator holding the answer key judges labels with the scorer, and passes them only when
 each part of the score clears its bar: segmentation 0.9, timing 0.75 and captions 0.9. One

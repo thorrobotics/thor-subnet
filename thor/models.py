@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from datetime import datetime
+from functools import cache
 from importlib import resources
 from pathlib import Path
 from typing import Any, Literal
@@ -79,6 +80,7 @@ class AnswerKey:
 _SCHEMAS = ("job", "submission", "answer_key")
 
 
+@cache
 def _schema(name: str) -> dict[str, Any]:
     return json.loads(resources.files("thor.schemas").joinpath(f"{name}.schema.json").read_text())
 
@@ -96,11 +98,15 @@ def _registry() -> Registry:
 _REGISTRY = _registry()
 
 
+@cache
+def _validator(name: str) -> Draft202012Validator:
+    return Draft202012Validator(_schema(name), registry=_REGISTRY)
+
+
 def _validate(name: str, document: Any) -> dict[str, Any]:
     if not isinstance(document, dict):
         raise ProtocolError(f"{name}: expected an object, got {type(document).__name__}")
-    validator = Draft202012Validator(_schema(name), registry=_REGISTRY)
-    errors = sorted(validator.iter_errors(document), key=lambda e: e.path)
+    errors = sorted(_validator(name).iter_errors(document), key=lambda e: e.path)
     error: ValidationError | None = errors[0] if errors else None
     if error is not None:
         field = "/".join(str(part) for part in error.absolute_path) or "(root)"
@@ -118,25 +124,31 @@ def _parse_time(name: str, field: str, value: str) -> datetime:
     return moment
 
 
-def _steps(name: str, items: list[dict[str, Any]]) -> tuple[Step, ...]:
-    steps = tuple(
-        Step(
-            start_s=float(item["start_s"]),
-            end_s=float(item["end_s"]),
-            caption=Caption(
-                action=item["caption"]["action"],
-                object=item["caption"]["object"],
-                hand=item["caption"]["hand"],
-            ),
-        )
-        for item in items
-    )
+def steps_from_documents(name: str, items: list[dict[str, Any]]) -> tuple[Step, ...]:
+    """Steps from their JSON form, checked for order and overlap. `name` prefixes the error messages."""
+    steps: list[Step] = []
+    for index, item in enumerate(items):
+        try:
+            steps.append(
+                Step(
+                    start_s=float(item["start_s"]),
+                    end_s=float(item["end_s"]),
+                    caption=Caption(
+                        action=item["caption"]["action"],
+                        object=item["caption"]["object"],
+                        hand=item["caption"]["hand"],
+                    ),
+                )
+            )
+        except (KeyError, TypeError, ValueError) as error:
+            detail = f"missing {error.args[0]!r}" if isinstance(error, KeyError) else str(error)
+            raise ProtocolError(f"{name}: steps/{index}: {detail}") from None
     for index, step in enumerate(steps):
         if step.end_s <= step.start_s:
             raise ProtocolError(f"{name}: steps/{index}/end_s: must be after start_s")
         if index > 0 and step.start_s < steps[index - 1].end_s:
             raise ProtocolError(f"{name}: steps/{index}/start_s: overlaps the previous step")
-    return steps
+    return tuple(steps)
 
 
 # --- loading -------------------------------------------------------------------------------
@@ -173,7 +185,7 @@ def load_submission(source: str | Path | dict[str, Any], job: Job | None = None)
         job_id=document["job_id"],
         miner_hotkey=document["miner_hotkey"],
         submitted_at=_parse_time("submission", "submitted_at", document["submitted_at"]),
-        steps=_steps("submission", document["steps"]),
+        steps=steps_from_documents("submission", document["steps"]),
         method=document.get("method"),
     )
     if job is not None:
@@ -187,7 +199,7 @@ def load_answer_key(source: str | Path | dict[str, Any]) -> AnswerKey:
     return AnswerKey(
         job_id=document["job_id"],
         provenance=document["provenance"],
-        steps=_steps("answer_key", document["steps"]),
+        steps=steps_from_documents("answer_key", document["steps"]),
     )
 
 

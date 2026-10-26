@@ -34,8 +34,8 @@
       "required": ["action", "object", "hand"],
       "additionalProperties": false,
       "properties": {
-        "action": { "type": "string", "minLength": 1, "maxLength": 40, "description": "A verb phrase in the present tense: \"pick up\", \"fold in half\"." },
-        "object": { "type": "string", "minLength": 1, "maxLength": 40, "description": "The thing acted on: \"towel\", \"left corner of the towel\"." },
+        "action": { "type": "string", "minLength": 1, "maxLength": 80, "description": "A verb phrase in the present tense: \"pick up\", \"fold in half\"." },
+        "object": { "type": "string", "minLength": 1, "maxLength": 80, "description": "The thing acted on: \"towel\", \"left corner of the towel\"." },
         "hand": { "type": "string", "enum": ["left", "right", "both"] }
       }
     }

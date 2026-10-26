@@ -7,7 +7,7 @@ timing and caption, and the total weighted by how well the segmentation matched.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 from thor.models import AnswerKey, Job, ProtocolError, Step, Submission, is_late, load_submission
@@ -73,7 +73,7 @@ ZERO = Score(total=0.0, segmentation=0.0, timing=0.0, caption=0.0)
 
 def zero(reason: str) -> Score:
     """A zero score with the reason the miner is told."""
-    return Score(**{**ZERO.__dict__, "zero_reason": reason})
+    return replace(ZERO, zero_reason=reason)
 
 
 def overlap(a: Step, b: Step) -> float:

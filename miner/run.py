@@ -49,7 +49,14 @@ def run_once(
     due = job.deadline.isoformat(timespec="seconds")
     log(f"miner: job {job.job_id}: {job.title} ({job.duration_s}s), due {due}")
 
-    steps = pipeline(job)
+    try:
+        steps = pipeline(job)
+    except ProtocolError as error:
+        log(f"miner: not submitting, the work fails the protocol: {error}")
+        return None
+    except Exception as error:  # a pipeline is the miner's own code; one bad job must not stop the loop
+        log(f"miner: the pipeline failed on {job.job_id}: {error!r}")
+        return None
     if steps is None:
         log("miner: the pipeline has nothing to hand in yet; try again later")
         return None
@@ -64,14 +71,17 @@ def run_once(
 
     receipt = client.submit(submission)
     result = receipt.get("score")
+    ident = receipt.get("submission_id") or "not stored"
     if result:
         parts = (
             f"segmentation {result['segmentation']}, timing {result['timing']}, caption {result['caption']}"
         )
         reason = f" ({result['zero_reason']})" if result.get("zero_reason") else ""
-        log(f"miner: accepted as {receipt.get('submission_id')}: score {result['total']}{reason}; {parts}")
+        log(f"miner: {ident}: score {result['total']}{reason}; {parts}")
     else:
-        log(f"miner: accepted as {receipt.get('submission_id')}: {receipt.get('note') or 'no score yet'}")
+        log(f"miner: accepted as {ident}: no score yet")
+    if receipt.get("note"):
+        log(f"miner: the queue says: {receipt['note']}")
     return receipt
 
 
@@ -101,7 +111,7 @@ def main(argv: list[str] | None = None) -> int:
             run_once(client, pipeline, args.method)
         except ClientError as error:
             print(f"miner: the queue answered {error}", file=sys.stderr)
-            if error.status == 0 and args.once:
+            if args.once:
                 return 1
         if args.once:
             return 0

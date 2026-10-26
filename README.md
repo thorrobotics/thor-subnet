@@ -46,7 +46,8 @@ examples/      a sample job, submission and answer key
 
 ## Try it
 
-Python 3.12 or later.
+Python 3.12 or later. Run everything from this checkout: the mock server and the example
+pipeline read its `examples/` folder.
 
 ```
 python3 -m venv .venv && . .venv/bin/activate
@@ -54,57 +55,56 @@ pip install -e ".[dev]"
 pytest
 ```
 
-The protocol's three documents live in `thor/schemas/` with one example of each in
-`examples/`. `thor.models` loads and checks them; a document that breaks a rule raises
-`ProtocolError` naming the field:
-
-```python
-from thor.models import load_job, load_submission
-
-job = load_job("examples/job.json")
-submission = load_submission("examples/submission.json", job)
-```
-
-`thor-mock-server` runs a local job queue on the protocol's paths, serving the example jobs
-and scoring submissions against the example answer key:
+Start the local job queue in one terminal and leave it running:
 
 ```
 thor-mock-server --port 8787
-curl -H 'X-Thor-Hotkey: 5FQmDdKuJgkkBhY2Bd4gdBcPy79DkBaFCXtawBp1e48zuvDW' http://127.0.0.1:8787/v1/jobs/next
 ```
 
-With the mock server running, the reference miner fetches a job, labels it, checks the
-work against the protocol and the deadline, and hands it in:
+In a second terminal (activate the venv there too), run the miner once. It fetches the
+example job, labels it, checks the work against the protocol and the deadline, hands it in
+and prints the score the queue sends back:
 
 ```
 thor-miner --pipeline example --once
 ```
 
-`--pipeline manual` writes a template for a person to fill in (under `./work`) and submits
-it on a later pass; `--pipeline your.module:function` plugs in your own labeller. The one
-function a miner replaces is in [miner/pipeline.py](miner/pipeline.py).
-
-The validator then collects what was submitted, scores it against the answer key, measures
-its own calibration on planted cases and prints the weights it would set:
+Then run the validator once. It collects what was submitted, scores it against the answer
+key, measures its own calibration on planted cases and prints the weights it would set:
 
 ```
 thor-validator --once
 ```
 
-`--backend stub` swaps the answer-key fact checker for one that accepts everything, and
-shows why that calibrates at 0.5.
+Worth trying next: `thor-miner --pipeline manual --once` writes a template under `./work`
+for a person to fill in and submits it on the next pass; `thor-validator --backend stub
+--once` swaps in a fact checker that accepts everything and shows why that calibrates at
+0.5. Your own labeller plugs in with `--pipeline your.module:function`; the one function a
+miner replaces is in [miner/pipeline.py](miner/pipeline.py).
 
 ## Status
 
+The loop runs end to end on one machine: the mock server hands out the example job, the
+miner labels and submits it, the validator scores it against the answer key, checks its own
+calibration and prints the weights it would set. Everything in the requirements is either
+implemented or represented by a documented stub:
+
 | Piece | State |
 | --- | --- |
-| Repository, notice, packaging, CI | done |
 | Protocol: schemas, examples, validation | done |
-| Docs: protocol, scoring, validators | done |
-| Scorer | done |
-| Mock job server | done |
-| Reference miner | done |
-| Validator | done |
+| Scorer, with the examples' scores pinned in tests | done |
+| Mock job server on the protocol's paths | done |
+| Reference miner with pluggable pipelines | done |
+| Validator: scoring, fact-check interface, calibration, weights | done |
+| Request signing | header documented; V1 sends `unsigned` |
+| Vision language model fact checks | interface and a stub backend |
+| Setting weights on chain | logged, not set |
+| Answer-key mixing at 15 to 20 percent | documented; the mock queue holds one keyed job |
+| Open-source footage | example job points at a placeholder clip address |
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Licence
 

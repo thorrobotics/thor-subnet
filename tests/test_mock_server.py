@@ -1,31 +1,14 @@
 import json
-import threading
 import urllib.error
 import urllib.request
-from datetime import timedelta
-from pathlib import Path
+from dataclasses import replace
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from mock_server.app import EXAMPLES, Queue, serve
+from mock_server.app import Queue
 
-HOTKEY = "5FQmDdKuJgkkBhY2Bd4gdBcPy79DkBaFCXtawBp1e48zuvDW"
-
-
-def running(deadline: timedelta):
-    queue = Queue.from_examples(EXAMPLES, deadline)
-    httpd = serve(queue, port=0)
-    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
-    thread.start()
-    base = f"http://127.0.0.1:{httpd.server_address[1]}"
-    try:
-        yield base
-    finally:
-        httpd.shutdown()
-
-
-server = pytest.fixture(lambda: (yield from running(timedelta(hours=1))))
-late = pytest.fixture(lambda: (yield from running(timedelta(0))))
+from .conftest import EXAMPLES, HOTKEY, example
 
 
 def call(
@@ -43,10 +26,6 @@ def call(
     except urllib.error.HTTPError as error:
         raw = error.read()
         return error.code, json.loads(raw) if raw else None
-
-
-def example(name: str) -> dict:
-    return json.loads((Path(EXAMPLES) / f"{name}.json").read_text())
 
 
 def test_loop(server: str) -> None:
@@ -92,3 +71,26 @@ def test_late_is_accepted_and_scores_zero(late: str) -> None:
     assert status == 200
     status, receipt = call(late, f"/v1/jobs/{job['job_id']}/submissions", example("submission"))
     assert status == 202 and receipt["score"]["total"] == 0.0 and receipt["score"]["zero_reason"] == "late"
+
+
+def test_on_time_work_survives_a_late_resubmission() -> None:
+    queue = Queue.from_examples(EXAMPLES, timedelta(hours=1))
+    job = queue.next_job(HOTKEY)
+    held, note = queue.submit(job.job_id, HOTKEY, example("submission"))
+    assert note is None and held.score.total == pytest.approx(0.95, abs=1e-3)
+
+    queue.served[(job.job_id, HOTKEY)] = replace(job, deadline=datetime.now(UTC) - timedelta(seconds=1))
+    late, note = queue.submit(job.job_id, HOTKEY, example("broken_submission"))
+    assert late.score.zero_reason == "late" and late.submission_id is None
+    assert note == f"arrived after the deadline and was not stored; {held.submission_id} still counts"
+    assert queue.held[(job.job_id, HOTKEY)] is held, "the on-time submission is the one that counts"
+
+
+def test_each_miner_keeps_its_own_deadline() -> None:
+    queue = Queue.from_examples(EXAMPLES, timedelta(hours=1))
+    first = queue.next_job(HOTKEY)
+    again = queue.next_job(HOTKEY)
+    assert again.deadline == first.deadline, "fetching again does not move the deadline"
+    other = queue.next_job("5" * 48)
+    assert queue.served[(first.job_id, HOTKEY)].deadline == first.deadline
+    assert other.deadline >= first.deadline

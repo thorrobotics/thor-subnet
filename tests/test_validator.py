@@ -1,22 +1,12 @@
-from datetime import timedelta
-from pathlib import Path
-
 import pytest
 
-from miner.pipeline import load_pipeline
-from miner.run import run_once as mine_once
-from thor.client import Client
 from thor.models import load_answer_key, load_job, load_submission
 from thor.scoring import score
 from validator.calibration import acceptable, calibrate, key_judge, plant
-from validator.run import run_once as validate_once
 from validator.vlm_check import StubBackend, fact_check
 from validator.weights import weights_from_scores
 
-from .test_mock_server import HOTKEY, running
-
-EXAMPLES = Path(__file__).resolve().parent.parent / "examples"
-server = pytest.fixture(lambda: (yield from running(timedelta(hours=1))))
+from .conftest import EXAMPLES
 
 
 @pytest.fixture
@@ -26,13 +16,26 @@ def key():
 
 def test_planted_cases(key) -> None:
     cases = plant(key)
-    assert [c.correct for c in cases] == [True, False, False, False, False]
-    assert len(cases[1].steps) == len(key.steps) - 2
+    assert [c.correct for c in cases] == [True, True, True, False, False, False, False]
+    assert len(cases[3].steps) == len(key.steps) - 2
 
 
 def test_the_key_judge_calibrates_at_one(key) -> None:
     result = calibrate(key_judge(key), plant(key))
-    assert result.caught == 4 and result.passed == 1 and result.balanced_accuracy == 1.0
+    assert result.caught == 4 and result.passed == 3 and result.balanced_accuracy == 1.0
+
+
+def test_an_over_strict_judge_is_penalised(key) -> None:
+    from datetime import UTC, datetime
+
+    from thor.models import Submission
+
+    def exact_only(steps) -> bool:
+        planted = Submission(key.job_id, "planted", datetime.now(UTC), tuple(steps))
+        return score(planted, key).total == 1.0
+
+    result = calibrate(exact_only, plant(key))
+    assert result.caught == 4 and result.passed == 1 and result.balanced_accuracy == pytest.approx(2 / 3)
 
 
 def test_acceptable_needs_every_part(key) -> None:
@@ -55,11 +58,17 @@ def test_weights_are_normalised_means() -> None:
     assert weights_from_scores({"a": [0.0]}) == {"a": 0.0}
 
 
-def test_miner_then_validator(server: str) -> None:
-    assert mine_once(Client(server, HOTKEY), load_pipeline("example"), log=lambda line: None)
-    lines: list[str] = []
-    weights = validate_once(Client(server, "validator"), log=lines.append)
-    assert weights == {HOTKEY: 1.0}
-    assert any("scored 0.9500" in line for line in lines)
-    assert any("balanced accuracy 1.00" in line for line in lines)
-    assert lines[-2].endswith("no weights are set") or any("no weights are set" in line for line in lines)
+def test_correct_cases_hold_for_a_short_key() -> None:
+    from thor.models import AnswerKey, Caption, Step
+
+    key = AnswerKey(
+        "job_short_000",
+        "expert",
+        (
+            Step(0.0, 0.5, Caption("tap", "button", "right")),
+            Step(0.6, 1.0, Caption("release", "button", "right")),
+        ),
+    )
+    cases = plant(key)
+    assert [c.correct for c in cases] == [True, True, False, False, False, False]
+    assert calibrate(key_judge(key), cases).balanced_accuracy == 1.0

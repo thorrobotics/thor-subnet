@@ -13,7 +13,7 @@ import os
 from collections.abc import Sequence
 from pathlib import Path
 
-from thor.models import Caption, Job, Step
+from thor.models import Job, Step, steps_from_documents
 
 TEMPLATE_STEP = {
     "start_s": 0.0,
@@ -57,15 +57,4 @@ def label_video(job: Job) -> Sequence[Step] | None:
     steps = document.get("steps", [])
     if not steps or steps == [TEMPLATE_STEP]:
         return None
-    return tuple(
-        Step(
-            start_s=float(item["start_s"]),
-            end_s=float(item["end_s"]),
-            caption=Caption(
-                action=item["caption"]["action"],
-                object=item["caption"]["object"],
-                hand=item["caption"]["hand"],
-            ),
-        )
-        for item in steps
-    )
+    return steps_from_documents("template", steps)

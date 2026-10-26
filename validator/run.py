@@ -29,13 +29,12 @@ VALIDATOR_HOTKEY = "5C7sX7pdVXVMGPu8ratNMTmC5gEsFrGqWJzvCNPQPya7eUAw"
 
 def collect(client: Client) -> list[dict[str, Any]]:
     """Every submission the queue holds. The live network serves a validator its share."""
-    _, body = client._call("GET", "/v1/validator/submissions")
-    return body or []
+    return client.get("/v1/validator/submissions") or []
 
 
 def answer_key(client: Client, job_id: str) -> AnswerKey | None:
     try:
-        _, body = client._call("GET", f"/v1/validator/answer-keys/{job_id}")
+        body = client.get(f"/v1/validator/answer-keys/{job_id}")
     except ClientError as error:
         if error.status == 404:
             return None
@@ -58,6 +57,8 @@ def run_once(client: Client, backend: Backend | None = None, log=print) -> dict[
     """
     scores: dict[str, list[float]] = defaultdict(list)
     calibrations: list[float] = []
+    keys: dict[str, AnswerKey | None] = {}
+    calibrated: set[str] = set()
     held = collect(client)
     log(f"validator: {len(held)} submission(s) to check")
     for item in held:
@@ -68,22 +69,28 @@ def run_once(client: Client, backend: Backend | None = None, log=print) -> dict[
             scores[hotkey].append(0.0)
             log(f"validator: {hotkey} on {job_id}: malformed ({error}), scored 0")
             continue
-        key = answer_key(client, job_id)
+        if job_id not in keys:
+            keys[job_id] = answer_key(client, job_id)
+        key = keys[job_id]
         if item.get("score") and item["score"].get("zero_reason") == "late":
             total, reason = 0.0, "late"
         elif key is not None:
             result = score(submission, key)
             total, reason = result.total, result.zero_reason
+        elif backend is None:
+            log(f"validator: {hotkey} on {job_id}: no answer key and no fact-check backend; not scored")
+            continue
         else:
-            check = fact_check(backend or StubBackend(), None, submission.steps)
+            check = fact_check(backend, None, submission.steps)
             total = check.accepted_share if check.passed else 0.0
             reason = None if check.passed else "fact check failed"
-            share = f"{check.accepted_share:.0%} of captions accepted"
+            share = f"{check.accepted_share:.0%} of captions accepted by the {backend.name} backend"
             log(f"validator: {hotkey} on {job_id}: no answer key; {share}")
         scores[hotkey].append(total)
         log(f"validator: {hotkey} on {job_id}: scored {total:.4f}" + (f" ({reason})" if reason else ""))
 
-        if key is not None:
+        if key is not None and job_id not in calibrated:
+            calibrated.add(job_id)
             judge = judge_with(backend) if backend else key_judge(key)
             calibration = calibrate(judge, plant(key))
             calibrations.append(calibration.balanced_accuracy)
@@ -115,7 +122,7 @@ def main(argv: list[str] | None = None) -> int:
             run_once(client, backend)
         except ClientError as error:
             print(f"validator: the queue answered {error}", file=sys.stderr)
-            if error.status == 0 and args.once:
+            if args.once:
                 return 1
         if args.once:
             return 0

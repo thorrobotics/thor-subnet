@@ -52,6 +52,11 @@ class Client:
             raise
         return body
 
+    def get(self, path: str) -> Any:
+        """A GET on any path, for the validator's own paths; the parsed body, or None when empty."""
+        _, body = self._call("GET", path)
+        return body
+
     def _call(self, method: str, path: str, body: dict[str, Any] | None = None) -> tuple[int, Any]:
         data = json.dumps(body).encode() if body is not None else None
         request = urllib.request.Request(self.base_url.rstrip("/") + path, data=data, method=method)

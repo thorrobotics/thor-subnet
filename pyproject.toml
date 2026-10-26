@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=69"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -23,7 +23,7 @@ thor-mock-server = "mock_server.app:main"
 Repository = "https://github.com/thorrobotics/thor-subnet"
 
 [tool.setuptools]
-packages = ["thor", "thor.schemas", "miner", "validator", "mock_server"]
+packages = ["thor", "thor.schemas", "miner", "miner.pipelines", "validator", "mock_server"]
 
 [tool.setuptools.package-data]
 "thor.schemas" = ["*.json"]

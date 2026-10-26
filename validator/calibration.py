@@ -2,8 +2,11 @@
 Scoring the validator: planted cases whose truth the network knows, and the balanced accuracy
 of the validator's judgements over them. Correct labels are an answer key's own steps; broken
 ones are those steps with a third of them dropped, every boundary moved past the tolerance,
-every hand swapped or every object changed. The validator does not know which is which, and
-a judge that always says yes or always says no lands on 0.5, the same as guessing.
+every hand swapped or every object changed; two more correct cases carry the small
+imperfections real work has, boundaries a few tenths off and one object phrased differently,
+so a judge that is too strict is caught as surely as one that is too lenient. The validator
+does not know which is which, and a judge that always says yes or always says no lands on
+0.5, the same as guessing.
 
 Where the validator holds the answer key it judges with the scorer, and a set of labels
 passes only when its segmentation, timing and captions are each acceptable on their own:
@@ -31,13 +34,31 @@ class Planted:
 
 
 def plant(key: AnswerKey) -> tuple[Planted, ...]:
-    """One correct case and four broken ones from an answer key."""
+    """Correct cases, one exact and up to two imperfect, and four broken ones from an answer key."""
     steps = key.steps
     shift = BOUNDARY_TOLERANCE_S + 1
     swapped = {"left": "right", "right": "left", "both": "left"}
     dropped = max(1, len(steps) // 3)
-    return (
+
+    def jitter(step: Step) -> float:
+        """A tenth of the step, at most a fifth of the tolerance: still overlapping, still inside the bar."""
+        return min(BOUNDARY_TOLERANCE_S / 5, step.duration_s / 10)
+
+    correct = [
         Planted(steps, True, "the answer key's own steps"),
+        Planted(
+            tuple(replace(s, start_s=s.start_s + jitter(s), end_s=s.end_s + jitter(s)) for s in steps),
+            True,
+            "every boundary a little off, inside the tolerance",
+        ),
+    ]
+    if len(steps) >= 3:
+        rephrased = list(steps)
+        last = steps[-1]
+        rephrased[-1] = replace(last, caption=replace(last.caption, object=f"the {last.caption.object}"))
+        correct.append(Planted(tuple(rephrased), True, "one object phrased differently"))
+    return (
+        *correct,
         Planted(steps[dropped:], False, f"the first {dropped} step(s) dropped"),
         Planted(
             tuple(replace(s, start_s=s.start_s + shift, end_s=s.end_s + shift) for s in steps),

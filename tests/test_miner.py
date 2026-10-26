@@ -1,5 +1,4 @@
 import json
-from datetime import timedelta
 from pathlib import Path
 
 import pytest
@@ -10,9 +9,7 @@ from miner.run import run_once
 from thor.client import Client, ClientError
 from thor.models import Caption, Step
 
-from .test_mock_server import HOTKEY, running
-
-server = pytest.fixture(lambda: (yield from running(timedelta(hours=1))))
+from .conftest import EXAMPLES, HOTKEY
 
 
 def test_example_pipeline_runs_the_loop(server: str) -> None:
@@ -65,6 +62,28 @@ def test_manual_template_is_left_alone_until_filled(tmp_path: Path, monkeypatch)
     monkeypatch.setenv("THOR_MINER_WORK_DIR", str(tmp_path))
     from thor.models import load_job
 
-    job = load_job(Path(__file__).resolve().parent.parent / "examples" / "job.json")
+    job = load_job(EXAMPLES / "job.json")
     assert manual.label_video(job) is None
     assert manual.label_video(job) is None, "an unfilled template is not a submission"
+
+
+def test_a_failing_pipeline_does_not_stop_the_loop(server: str) -> None:
+    def broken(job):
+        raise KeyError("caption")
+
+    lines: list[str] = []
+    assert run_once(Client(server, HOTKEY), broken, log=lines.append) is None
+    assert "the pipeline failed on job_000001_fold_towel" in lines[-1]
+
+
+def test_a_bad_template_names_the_field(server: str, tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("THOR_MINER_WORK_DIR", str(tmp_path))
+    client = Client(server, HOTKEY)
+    run_once(client, load_pipeline("manual"), log=lambda line: None)
+    template = tmp_path / "job_000001_fold_towel.json"
+    document = json.loads(template.read_text())
+    document["steps"] = [{"start_s": 0.5, "end_s": 3.0, "caption": {"action": "pick up", "object": "towel"}}]
+    template.write_text(json.dumps(document))
+    lines: list[str] = []
+    assert run_once(client, load_pipeline("manual"), log=lines.append) is None
+    assert lines[-1].endswith("fails the protocol: template: steps/0: missing 'hand'")

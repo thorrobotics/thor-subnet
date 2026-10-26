@@ -42,7 +42,7 @@
       "additionalProperties": false,
       "properties": {
         "max_steps": { "type": "integer", "minimum": 1, "default": 50 },
-        "max_caption_chars": { "type": "integer", "minimum": 1, "default": 80 }
+        "max_caption_chars": { "type": "integer", "minimum": 1, "maximum": 80, "default": 80, "description": "At most 80, the protocol's own cap on a caption part; a job can only tighten it." }
       }
     },
     "issued_at": { "type": "string", "format": "date-time" },
