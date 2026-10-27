@@ -1,9 +1,13 @@
 # THOR subnet
 
-> **Illustrative only.** This repository shows how THOR's Bittensor subnet (SN112) will work.
-> The network is not live, no weights are set and nothing here earns rewards yet. The full
-> miner and validator will replace this code, and starter repositories for new miners will
-> follow when they do.
+> **Illustrative only.** This repository is a simplified example of the basic loop in THOR's
+> Bittensor subnet (SN112): a miner takes a job, labels a video and submits it, and a validator
+> scores it. Some rules here are simplified and differ from the planned design; where they
+> differ, the [docs](https://thormachines.ai/docs/start/how-sn112-works/) describe how SN112 will
+> work. Not shown: the private beta for qualified firms, leased assignments, cross-checks, buyer
+> acceptance and two-stage payment. The network is not live, no weights are set and nothing
+> here earns rewards yet. The full miner and validator will replace this code, and starter
+> repositories for new miners will follow when they do.
 
 THOR runs a Bittensor subnet that labels first-person video of people doing hands-on tasks,
 for robotics training. For each video the network splits the task into steps, marks exactly
@@ -20,8 +24,9 @@ output, not the method. Miners fetch work; the network does not push it. A miner
 job when it is ready, so slow or human workflows still fit and a miner needs no open server.
 
 **Validators** score submissions against an answer key. A share of all jobs, 15 to 20
-percent, are test videos whose correct labels are already known, and miners cannot tell them
-apart from normal jobs. A submission is scored on how close its steps, timings and captions
+percent, are test videos whose correct labels are already known, and are meant to be
+indistinguishable from normal jobs (in this prototype they are not yet: only test jobs return
+a score on submission). A submission is scored on how close its steps, timings and captions
 are to the answer key, and validators run vision language models to fact check miner work.
 Validators are themselves scored on whether they catch labels the network deliberately broke
 and pass labels it knows are correct. Always saying yes, or always saying no, scores badly.
