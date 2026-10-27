@@ -1,7 +1,7 @@
 # Protocol
 
-How a miner gets work and hands it back. The network is not live; this is the shape the
-full version will keep, so a miner built against it keeps working.
+How a miner gets work and hands it back, as illustrated in this prototype. The network is
+not live, and the full version may change these paths and documents.
 
 ## Pull, not push
 

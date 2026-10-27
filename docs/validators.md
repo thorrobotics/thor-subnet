@@ -6,8 +6,9 @@ What a validator does, and how the network knows whether to trust it.
 
 A share of all jobs, 15 to 20 percent, are test videos: clips the network has already
 labelled, by its own annotators or by agreement between several independent labellers.
-They come from the same footage pool, in the same job format, in random order, so a miner
-cannot tell a test job from a normal one and has no reason to treat the two differently.
+They come from the same footage pool, in the same job format, in random order, so that a
+miner cannot tell a test job from a normal one. (In this prototype the mock queue still
+returns a score only for test jobs, which reveals them; the full version should not.)
 
 For a test job the validator scores the submission against the answer key with the rules
 in [scoring.md](scoring.md). Those scores are the backbone of a miner's reputation.

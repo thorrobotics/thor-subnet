@@ -1,7 +1,9 @@
 # THOR subnet (SN112)
 
-> Illustrative only. This repository shows how THOR's Bittensor subnet will work. The
-> network is not live, no weights are set and nothing here earns rewards yet.
+> Illustrative only. A simplified example of the basic loop in THOR's Bittensor subnet.
+> Some rules differ from the planned design; where they differ, https://thormachines.ai/docs
+> describes how SN112 will work. The network is not live, no weights are set and nothing
+> here earns rewards yet.
 
 THOR's subnet labels first-person video of people doing hands-on tasks, for robotics
 training: it splits each task into steps, marks when each starts and ends, and captions
