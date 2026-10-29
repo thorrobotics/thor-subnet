@@ -15,6 +15,8 @@ when each step starts and ends, and writes a short caption per step saying what 
 which object, with which hand. V1 uses open-source footage only. Its goal is to publish an
 open dataset that proves the network can do this work well.
 
+Follow THOR on [X](https://x.com/thormachines).
+
 ## How it works
 
 **Miners** take a video from the job queue, return the steps, timings and captions, and
